@@ -1,0 +1,25 @@
+# Separate project (RAG app) with its own repo
+exercises/
+
+# Local tooling
+.claude/
+_bmad/
+_bmad-output/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node (presentation build)
+node_modules/
+
+# Data is downloaded from Kaggle at runtime
+*.csv
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

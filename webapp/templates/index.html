@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Startup Success Predictor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      background: linear-gradient(90deg, #818cf8, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 36px;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: #1e2130;
+      border: 1px solid #2d3148;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 780px;
+      margin: 0 auto 28px auto;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #818cf8;
+      margin-bottom: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+
+    .field label {
+      display: block;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: #818cf8;
+    }
+
+    .field select option { background: #1e2130; }
+
+    .hint {
+      font-size: 0.72rem;
+      color: #475569;
+      margin-top: 4px;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 15px;
+      background: linear-gradient(90deg, #818cf8, #38bdf8);
+      border: none;
+      border-radius: 12px;
+      color: #0f1117;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn:hover  { opacity: 0.92; }
+    .btn:active { transform: scale(0.99); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Result card */
+    #result {
+      display: none;
+      max-width: 780px;
+      margin: 28px auto 0 auto;
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      border: 1px solid transparent;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    #result.success { background: #0d2a1f; border-color: #22c55e; }
+    #result.failure { background: #2a0d0d; border-color: #ef4444; }
+
+    .result-label {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .success .result-label { color: #22c55e; }
+    .failure .result-label { color: #ef4444; }
+
+    .result-confidence {
+      font-size: 1rem;
+      color: #94a3b8;
+      margin-bottom: 24px;
+    }
+
+    .bars { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+    .bar-wrap { flex: 1; min-width: 160px; max-width: 260px; }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      margin-bottom: 6px;
+      color: #94a3b8;
+    }
+
+    .bar-track {
+      height: 10px;
+      background: #1e2130;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+    }
+
+    .bar-fill.green { background: #22c55e; }
+    .bar-fill.red   { background: #ef4444; }
+
+    /* Presets */
+    .presets {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .preset-btn {
+      padding: 6px 14px;
+      border-radius: 99px;
+      border: 1px solid #2d3148;
+      background: #0f1117;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover { border-color: #818cf8; color: #818cf8; }
+
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 3px solid #0f1117;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <h1>Startup Success Predictor</h1>
+  <p class="subtitle">Fill in your startup's metrics and get an instant prediction</p>
+
+  <!-- Presets -->
+  <div style="max-width:780px;margin:0 auto 16px auto;">
+    <div class="presets">
+      <span style="font-size:0.8rem;color:#475569;align-self:center;">Quick fill:</span>
+      <button class="preset-btn" onclick="loadPreset('strong')">Strong startup</button>
+      <button class="preset-btn" onclick="loadPreset('weak')">Weak startup</button>
+      <button class="preset-btn" onclick="loadPreset('mid')">Mid-stage</button>
+      <button class="preset-btn" onclick="loadPreset('clear')">Clear</button>
+    </div>
+  </div>
+
+  <form id="form" onsubmit="submitForm(event)">
+
+    <!-- Numeric fields -->
+    <div class="card">
+      <div class="section-title">Startup Metrics</div>
+      <div class="grid">
+
+        <div class="field">
+          <label>Funding Rounds</label>
+          <input type="number" id="funding_rounds" min="0" max="8" placeholder="e.g. 3" required />
+          <div class="hint">Number of funding rounds completed (0 – 8)</div>
+        </div>
+
+        <div class="field">
+          <label>Founder Experience (years)</label>
+          <input type="number" id="founder_experience_years" min="0" max="24" placeholder="e.g. 10" required />
+          <div class="hint">Years of relevant industry experience (0 – 24)</div>
+        </div>
+
+        <div class="field">
+          <label>Team Size</label>
+          <input type="number" id="team_size" min="1" placeholder="e.g. 40" required />
+          <div class="hint">Total number of employees</div>
+        </div>
+
+        <div class="field">
+          <label>Market Size (billion $)</label>
+          <input type="number" id="market_size_billion" min="0" step="0.1" placeholder="e.g. 25.0" required />
+          <div class="hint">Total addressable market in billions</div>
+        </div>
+
+        <div class="field">
+          <label>Product Traction (users)</label>
+          <input type="number" id="product_traction_users" min="0" placeholder="e.g. 150000" required />
+          <div class="hint">Active users or customers</div>
+        </div>
+
+        <div class="field">
+          <label>Burn Rate (million $/month)</label>
+          <input type="number" id="burn_rate_million" min="0" step="0.1" placeholder="e.g. 12.0" required />
+          <div class="hint">Monthly cash spend in millions</div>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label>Revenue (million $)</label>
+          <input type="number" id="revenue_million" min="0" step="1000" placeholder="e.g. 800000" required />
+          <div class="hint">Total revenue generated in millions — this is the strongest signal</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Categorical fields -->
+    <div class="card">
+      <div class="section-title">Startup Profile</div>
+      <div class="grid">
+
+        <div class="field">
+          <label>Investor Type</label>
+          <select id="investor_type" required>
+            <option value="" disabled selected>Select...</option>
+            <option value="tier1_vc">Tier 1 VC (e.g. Sequoia, a16z)</option>
+            <option value="tier2_vc">Tier 2 VC</option>
+            <option value="angel">Angel Investor</option>
+            <option value="none">No Investor</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Sector</label>
+          <select id="sector" required>
+            <option value="" disabled selected>Select...</option>
+            <option value="AI">AI</option>
+            <option value="Fintech">Fintech</option>
+            <option value="Health">Health</option>
+            <option value="SaaS">SaaS</option>
+            <option value="Ecommerce">Ecommerce</option>
+            <option value="Crypto">Crypto</option>
+            <option value="Climate">Climate</option>
+          </select>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label>Founder Background</label>
+          <select id="founder_background" required>
+            <option value="" disabled selected>Select...</option>
+            <option value="serial_founder">Serial Founder (founded before)</option>
+            <option value="ex_bigtech">Ex Big Tech (Google, Meta, etc.)</option>
+            <option value="academic">Academic / Research</option>
+            <option value="first_time">First Time Founder</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <button class="btn" type="submit" id="submit-btn">Predict Outcome</button>
+  </form>
+
+  <!-- Result -->
+  <div id="result">
+    <div class="result-label" id="result-label"></div>
+    <div class="result-confidence" id="result-confidence"></div>
+    <div class="bars">
+      <div class="bar-wrap">
+        <div class="bar-label"><span>Success</span><span id="prob-success-text"></span></div>
+        <div class="bar-track"><div class="bar-fill green" id="bar-success" style="width:0%"></div></div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-label"><span>Failure</span><span id="prob-failure-text"></span></div>
+        <div class="bar-track"><div class="bar-fill red" id="bar-failure" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const presets = {
+      strong: {
+        funding_rounds: 4, founder_experience_years: 18, team_size: 80,
+        market_size_billion: 50, product_traction_users: 600000,
+        burn_rate_million: 15, revenue_million: 1500000,
+        investor_type: "tier1_vc", sector: "AI", founder_background: "serial_founder"
+      },
+      weak: {
+        funding_rounds: 0, founder_experience_years: 1, team_size: 3,
+        market_size_billion: 5, product_traction_users: 1000,
+        burn_rate_million: 8, revenue_million: 5000,
+        investor_type: "none", sector: "Crypto", founder_background: "first_time"
+      },
+      mid: {
+        funding_rounds: 2, founder_experience_years: 8, team_size: 25,
+        market_size_billion: 15, product_traction_users: 80000,
+        burn_rate_million: 12, revenue_million: 300000,
+        investor_type: "angel", sector: "SaaS", founder_background: "ex_bigtech"
+      }
+    };
+
+    function loadPreset(name) {
+      if (name === "clear") {
+        document.getElementById("form").reset();
+        document.getElementById("result").style.display = "none";
+        return;
+      }
+      const p = presets[name];
+      for (const [key, val] of Object.entries(p)) {
+        const el = document.getElementById(key);
+        if (el) el.value = val;
+      }
+    }
+
+    async function submitForm(e) {
+      e.preventDefault();
+      const btn = document.getElementById("submit-btn");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Predicting...';
+
+      const payload = {
+        funding_rounds:           document.getElementById("funding_rounds").value,
+        founder_experience_years: document.getElementById("founder_experience_years").value,
+        team_size:                document.getElementById("team_size").value,
+        market_size_billion:      document.getElementById("market_size_billion").value,
+        product_traction_users:   document.getElementById("product_traction_users").value,
+        burn_rate_million:        document.getElementById("burn_rate_million").value,
+        revenue_million:          document.getElementById("revenue_million").value,
+        investor_type:            document.getElementById("investor_type").value,
+        sector:                   document.getElementById("sector").value,
+        founder_background:       document.getElementById("founder_background").value,
+      };
+
+      try {
+        const res  = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.error) { alert("Error: " + data.error); return; }
+
+        const resultEl = document.getElementById("result");
+        resultEl.className = data.label === "SUCCESS" ? "success" : "failure";
+        resultEl.style.display = "block";
+
+        document.getElementById("result-label").textContent =
+          data.label === "SUCCESS" ? "Likely to Succeed" : "Likely to Fail";
+        document.getElementById("result-confidence").textContent =
+          `Model confidence: ${data.confidence}%`;
+
+        document.getElementById("prob-success-text").textContent = data.prob_success + "%";
+        document.getElementById("prob-failure-text").textContent = data.prob_failure + "%";
+
+        // Animate bars
+        setTimeout(() => {
+          document.getElementById("bar-success").style.width = data.prob_success + "%";
+          document.getElementById("bar-failure").style.width = data.prob_failure + "%";
+        }, 50);
+
+        resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      } catch (err) {
+        alert("Could not connect to server.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "Predict Outcome";
+      }
+    }
+  </script>
+</body>
+</html>
